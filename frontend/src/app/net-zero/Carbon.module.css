@@ -1,0 +1,111 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.cardValue {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.chartPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.chartPanel h2 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.actionsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actionsPanel h2 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.actionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actionCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid var(--success);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionRank {
+  background-color: var(--success);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.actionDesc {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.actionImpact {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--success);
+}

@@ -1,0 +1,52 @@
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kpiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpiTitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.kpiIcon {
+  color: var(--primary);
+}
+
+.kpiBody {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.kpiValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.kpiTrend {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trendUp {
+  color: var(--success);
+}
+
+.trendDown {
+  color: var(--danger);
+}
+
+.kpiSubtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}

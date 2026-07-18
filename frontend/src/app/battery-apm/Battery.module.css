@@ -1,0 +1,123 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.cardValue {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.chartPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 420px;
+}
+
+.chartPanel h2 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.alertsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 420px;
+}
+
+.alertsPanel h2 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.alertCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alertCard[data-severity="critical"] {
+  border-left-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.alertCard[data-severity="warning"],
+.alertCard[data-severity="high"] {
+  border-left-color: var(--warning);
+}
+
+.alertHeader {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.alertBadge {
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.alertCard[data-severity="critical"] .alertBadge {
+  color: var(--danger);
+}
+
+.alertMessage {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.alertAction {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
