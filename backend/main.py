@@ -35,13 +35,15 @@ app.add_middleware(
 )
 
 # Register routers
-from routers import battery, fleet, supply_chain, carbon, ai
+from routers import battery, fleet, supply_chain, carbon, ai, bpan, intelligence
 
 app.include_router(battery.router)
 app.include_router(fleet.router)
 app.include_router(supply_chain.router)
 app.include_router(carbon.router)
 app.include_router(ai.router)
+app.include_router(bpan.router)
+app.include_router(intelligence.router)
 
 
 @app.get("/")
@@ -75,7 +77,10 @@ def get_dashboard():
             "total_diesel": len(store.diesel_vehicles),
             "ready_for_ev": len([r for r in fleet_ready if r["readiness"]["eri_score"] >= 80]),
             "avg_eri": round(sum(r["readiness"]["eri_score"] for r in fleet_ready) / max(len(fleet_ready), 1), 1),
-            "potential_savings_lakh": round(sum(r["readiness"]["tco_comparison"]["savings_lakh"] for r in fleet_ready if r["readiness"]["tco_comparison"]["savings_lakh"] > 0), 1),
+            "potential_savings_lakh": round(sum(
+                r["readiness"]["tco_comparison"]["savings_lakh"] for r in fleet_ready
+                if (r["readiness"]["tco_comparison"]["savings_lakh"] or 0) > 0
+            ), 1),
         },
         "supply_chain": {
             "total_suppliers": sc["summary"]["total_suppliers"],

@@ -2,8 +2,27 @@
 
 from fastapi import APIRouter, HTTPException
 from data.seed_data import store
+from services import degradation
 
 router = APIRouter(prefix="/api/battery", tags=["Battery APM"])
+
+
+@router.get("/degradation-accuracy")
+def get_degradation_accuracy():
+    """
+    Held-out validation of the degradation model against a persistence
+    baseline — the accuracy evidence behind every RUL number in the platform.
+    """
+    return degradation.evaluate_fleet(store.ev_vehicles)
+
+
+@router.get("/forecast/{vehicle_id}")
+def get_forecast(vehicle_id: str):
+    """Observed-vs-fitted degradation curve plus forward projection to EOL."""
+    vehicle = store.get_vehicle(vehicle_id)
+    if not vehicle or vehicle["type"] != "EV":
+        raise HTTPException(status_code=404, detail="EV not found")
+    return degradation.forecast_curve(vehicle)
 
 
 @router.get("/fleet-health")

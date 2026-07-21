@@ -59,4 +59,22 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ message, module }),
   }),
+
+  // Battery Passport (BPAN)
+  getBpanRegistry: () => fetchFromAPI('/bpan/registry'),
+  getBpanPassport: (id) => fetchFromAPI(`/bpan/passport/${id}`),
+  getBpanCompliance: () => fetchFromAPI('/bpan/compliance'),
+  getSecondLife: () => fetchFromAPI('/bpan/second-life'),
+
+  // Degradation model validation
+  getDegradationAccuracy: () => fetchFromAPI('/battery/degradation-accuracy'),
+  getForecast: (id) => fetchFromAPI(`/battery/forecast/${id}`),
+
+  // Multi-agent intelligence
+  getAgents: () => fetchFromAPI('/intelligence/agents'),
+  getCompoundRisk: () => fetchFromAPI('/intelligence/compound-risk'),
+  askAgents: (query) => fetchFromAPI('/intelligence/ask', {
+    method: 'POST',
+    body: JSON.stringify({ query }),
+  }),
 };

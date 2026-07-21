@@ -22,7 +22,13 @@ def get_readiness_scores():
             "ready_next_quarter": len([r for r in results if 65 <= r["readiness"]["eri_score"] < 80]),
             "needs_evaluation": len([r for r in results if r["readiness"]["eri_score"] < 50]),
             "grade_distribution": grades,
-            "total_potential_savings_lakh": round(sum(r["readiness"]["tco_comparison"]["savings_lakh"] for r in results if r["readiness"]["tco_comparison"]["savings_lakh"] > 0), 2),
+            "total_potential_savings_lakh": round(sum(
+                r["readiness"]["tco_comparison"]["savings_lakh"] for r in results
+                if (r["readiness"]["tco_comparison"]["savings_lakh"] or 0) > 0
+            ), 2),
+            "awaiting_ev_technology": len([
+                r for r in results if not r["readiness"]["tco_comparison"]["ev_available"]
+            ]),
         },
         "vehicles": [
             {
@@ -41,6 +47,7 @@ def get_readiness_scores():
                 "recommended_ev_oem": r["readiness"]["recommended_ev_oem"],
                 "tco_savings_lakh": r["readiness"]["tco_comparison"]["savings_lakh"],
                 "breakeven_months": r["readiness"]["tco_comparison"]["breakeven_months"],
+                "ev_available": r["readiness"]["tco_comparison"]["ev_available"],
                 "transition_priority": r["readiness"]["transition_priority"],
             }
             for r in results

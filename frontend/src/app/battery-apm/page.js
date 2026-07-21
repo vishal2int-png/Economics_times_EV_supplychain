@@ -8,18 +8,21 @@ import styles from './Battery.module.css';
 export default function BatteryAPM() {
   const [healthData, setHealthData] = useState(null);
   const [alerts, setAlerts] = useState(null);
+  const [accuracy, setAccuracy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [health, alertData] = await Promise.all([
+        const [health, alertData, accuracyData] = await Promise.all([
           api.getFleetHealth(),
-          api.getBatteryAlerts()
+          api.getBatteryAlerts(),
+          api.getDegradationAccuracy()
         ]);
         setHealthData(health);
         setAlerts(alertData);
+        setAccuracy(accuracyData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -53,6 +56,46 @@ export default function BatteryAPM() {
           <div className={styles.cardValue} style={{ color: 'var(--success)' }}>{healthData.summary.healthy_count}</div>
         </div>
       </div>
+
+      {accuracy && accuracy.summary.evaluated_vehicles > 0 && (
+        <div className={`glass-card ${styles.accuracyPanel}`}>
+          <h2>Degradation Model — Held-Out Validation</h2>
+          <p className={styles.accuracySub}>
+            {accuracy.summary.model} &nbsp;·&nbsp; validated on {accuracy.summary.validation} across{' '}
+            {accuracy.summary.evaluated_vehicles} vehicles.
+          </p>
+          <div className={styles.accuracyGrid}>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Model RMSE</span>
+              <span className={styles.metricValue} style={{ color: 'var(--success)' }}>
+                {accuracy.summary.model_rmse_pct_soh}
+              </span>
+              <span className={styles.metricUnit}>% SoH</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Baseline RMSE</span>
+              <span className={styles.metricValue} style={{ color: 'var(--text-muted)' }}>
+                {accuracy.summary.baseline_rmse_pct_soh}
+              </span>
+              <span className={styles.metricUnit}>% SoH (persistence)</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Improvement</span>
+              <span className={styles.metricValue} style={{ color: 'var(--primary)' }}>
+                {accuracy.summary.rmse_improvement_pct}%
+              </span>
+              <span className={styles.metricUnit}>vs baseline</span>
+            </div>
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Beats Baseline</span>
+              <span className={styles.metricValue} style={{ color: 'var(--primary)' }}>
+                {accuracy.summary.vehicles_beating_baseline}/{accuracy.summary.evaluated_vehicles}
+              </span>
+              <span className={styles.metricUnit}>vehicles</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={styles.mainGrid}>
         <div className={`glass-card ${styles.chartPanel}`}>

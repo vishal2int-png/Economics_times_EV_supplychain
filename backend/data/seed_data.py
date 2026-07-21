@@ -44,7 +44,16 @@ EV_MODELS = [
     {"model": "BYD T5", "oem": "BYD India", "type": "Medium Truck", "range_km": 250, "battery_kwh": 150, "price_lakh": 55.0, "payload_kg": 4500},
     {"model": "Tata Ultra T.7 EV", "oem": "Tata Motors", "type": "Medium Truck", "range_km": 185, "battery_kwh": 130, "price_lakh": 38.0, "payload_kg": 4200},
     {"model": "Euler HiLoad EV", "oem": "Euler Motors", "type": "3W Cargo", "range_km": 151, "battery_kwh": 11.5, "price_lakh": 4.0, "payload_kg": 500},
+    # Mid-payload e-LCVs — without these the catalogue jumps straight from a
+    # 600 kg 3-wheeler to a 4200 kg truck, forcing absurd over-specification
+    # when matching light commercial diesels.
+    {"model": "Tata Intra EV", "oem": "Tata Motors", "type": "Light Truck", "range_km": 150, "battery_kwh": 27.0, "price_lakh": 15.5, "payload_kg": 1300},
+    {"model": "Mahindra ZEO", "oem": "Mahindra Electric", "type": "Light Truck", "range_km": 160, "battery_kwh": 25.0, "price_lakh": 13.5, "payload_kg": 1700},
+    {"model": "Switch IeV 4", "oem": "Switch Mobility", "type": "Light Truck", "range_km": 140, "battery_kwh": 30.0, "price_lakh": 18.0, "payload_kg": 2300},
 ]
+
+# Commercial/industrial depot electricity tariff (Rs/kWh) used for EV running cost.
+COMMERCIAL_TARIFF_INR_PER_KWH = 9.0
 
 DIESEL_MODELS = [
     {"model": "Tata Ace Gold Diesel", "oem": "Tata Motors", "type": "Light Truck", "mileage_kmpl": 20, "price_lakh": 6.5, "payload_kg": 750},
@@ -68,15 +77,15 @@ def _generate_reg_number(city: str) -> str:
 
 def _generate_battery_telemetry(vehicle_id: str, age_months: int, daily_km: float, fast_charge_pct: float) -> Dict:
     """Generate realistic battery degradation data."""
-    # Calendar aging: ~2% per year baseline
-    calendar_deg = (age_months / 12) * 2.0
+    # Calendar aging: ~3% per year baseline (Indian ambient accelerates this)
+    calendar_deg = (age_months / 12) * 3.0
     # Cycle aging: based on usage intensity
     cycle_count = int(daily_km * age_months * 30 / 250)  # rough cycles
-    cycle_deg = (cycle_count / 1000) * 3.0
-    # Fast charging penalty
-    fast_charge_deg = fast_charge_pct * 0.05 * (age_months / 12)
+    cycle_deg = (cycle_count / 1000) * 4.0
+    # Fast charging penalty (fast_charge_pct is a 0-1 fraction of sessions)
+    fast_charge_deg = fast_charge_pct * 6.0 * (age_months / 12)
     # Temperature stress (Indian climate)
-    temp_deg = random.uniform(0.5, 2.0)
+    temp_deg = random.uniform(0.5, 3.0)
 
     total_deg = calendar_deg + cycle_deg + fast_charge_deg + temp_deg
     total_deg = min(total_deg, 30)  # cap at 30% degradation
@@ -235,11 +244,51 @@ def _compute_eri_score(vehicle: Dict) -> Dict:
     dwell_scores = {"intra-plant": 95, "urban": 85, "industrial": 80, "distribution": 70, "port": 65, "intercity": 40}
     dwell_score = dwell_scores.get(route_type, 60)
 
-    # TCO advantage (25%)
+    # Find the best EV match first — the TCO component depends on which vehicle
+    # we would actually buy. Must cover the daily range AND carry the payload of
+    # the vehicle it replaces (a 3-wheeler can't stand in for a heavy truck).
+    # Gross over-specification is not a real recommendation: putting a 4-tonne
+    # truck under a 1-tonne duty cycle destroys the TCO case. If the only
+    # candidate is more than 2.5x the payload needed, treat the segment as
+    # having no viable EV yet rather than proposing an absurd swap.
+    required_payload = vehicle["payload_kg"] * 0.85  # allow slight downsizing
+    max_sensible_payload = vehicle["payload_kg"] * 2.5
+    best_ev = None
+    for ev in EV_MODELS:
+        if (ev["range_km"] >= daily_km * 1.15
+                and required_payload <= ev["payload_kg"] <= max_sensible_payload):
+            if best_ev is None or ev["price_lakh"] < best_ev["price_lakh"]:
+                best_ev = ev
+
+    # TCO advantage (25%) — full 7-year cost of ownership including capex, not
+    # just running cost, so the score cannot disagree with the money.
+    years = 7
     diesel_monthly = vehicle["monthly_cost_inr"]
-    ev_monthly_est = daily_km * 30 * 3.2  # ₹3.2/km avg EV
-    tco_saving_pct = ((diesel_monthly - ev_monthly_est) / diesel_monthly) * 100 if diesel_monthly > 0 else 0
-    tco_score = min(100, max(0, tco_saving_pct * 2))
+    diesel_tco = vehicle["price_lakh"] + (diesel_monthly * 12 * years / 100000)
+
+    # EV running cost scales with the vehicle, exactly as diesel cost does:
+    # actual consumption (kWh/km) x commercial depot tariff. A flat rate would
+    # understate a 5-tonne e-truck and overstate a 3-wheeler.
+    if best_ev:
+        ev_kwh_per_km = best_ev["battery_kwh"] / best_ev["range_km"]
+        ev_cost_per_km = ev_kwh_per_km * COMMERCIAL_TARIFF_INR_PER_KWH
+    else:
+        ev_cost_per_km = 3.2
+    ev_monthly_est = daily_km * 30 * ev_cost_per_km
+
+    if best_ev:
+        ev_price = best_ev["price_lakh"]
+        fame_subsidy = ev_price * 0.15  # ~15% FAME-II subsidy
+        ev_tco = (ev_price - fame_subsidy) + (ev_monthly_est * 12 * years / 100000)
+        savings_lakh = diesel_tco - ev_tco
+        savings_pct = (savings_lakh / diesel_tco * 100) if diesel_tco > 0 else 0
+        # Map real savings onto 0-100: break-even scores 50, +25% savings scores 100.
+        tco_score = min(100, max(0, 50 + savings_pct * 2))
+    else:
+        # No EV can do this job yet — there is no TCO case to make.
+        ev_price = fame_subsidy = ev_tco = 0.0
+        savings_lakh = savings_pct = 0.0
+        tco_score = 0.0
 
     # Infrastructure readiness (15%)
     city_infra = {"Mumbai": 82, "Delhi": 85, "Pune": 78, "Chennai": 72, "Bangalore": 80, "Hyderabad": 68, "Kolkata": 55, "Ahmedabad": 62}
@@ -249,22 +298,11 @@ def _compute_eri_score(vehicle: Dict) -> Dict:
     crit_scores = {"Light Truck": 85, "3W Cargo": 90, "Medium Truck": 60, "Heavy Truck": 30}
     crit_score = crit_scores.get(vehicle["vehicle_type"], 50)
 
-    # Weighted ERI
+    # Weighted ERI. With no viable EV the vehicle is not electrifiable today,
+    # so it is capped out of the "ready" bands regardless of route or depot fit.
     eri = (route_score * 0.30 + dwell_score * 0.20 + tco_score * 0.25 + infra_score * 0.15 + crit_score * 0.10)
-
-    # Find best EV match
-    best_ev = None
-    for ev in EV_MODELS:
-        if ev["range_km"] >= daily_km * 1.15:  # 15% buffer
-            if best_ev is None or ev["price_lakh"] < best_ev["price_lakh"]:
-                best_ev = ev
-
-    # TCO comparison
-    years = 7
-    diesel_tco = vehicle["price_lakh"] + (diesel_monthly * 12 * years / 100000)
-    ev_price = best_ev["price_lakh"] if best_ev else 35.0
-    fame_subsidy = ev_price * 0.15  # ~15% FAME-II subsidy
-    ev_tco = (ev_price - fame_subsidy) + (ev_monthly_est * 12 * years / 100000)
+    if not best_ev:
+        eri = min(eri, 45.0)
 
     return {
         "eri_score": round(eri, 1),
@@ -276,20 +314,31 @@ def _compute_eri_score(vehicle: Dict) -> Dict:
             "infrastructure_readiness": round(infra_score, 1),
             "operational_criticality": round(crit_score, 1),
         },
-        "recommended_ev": best_ev["model"] if best_ev else "No suitable match — consider range-extended EV",
+        "recommended_ev": best_ev["model"] if best_ev else "No suitable EV yet — awaiting heavy-duty / long-range models",
         "recommended_ev_oem": best_ev["oem"] if best_ev else "N/A",
         "tco_comparison": {
+            "ev_available": best_ev is not None,
             "diesel_tco_lakh": round(diesel_tco, 2),
-            "ev_tco_lakh": round(ev_tco, 2),
-            "savings_lakh": round(diesel_tco - ev_tco, 2),
-            "savings_pct": round(((diesel_tco - ev_tco) / diesel_tco) * 100, 1) if diesel_tco > 0 else 0,
-            "breakeven_months": max(6, int((ev_price - fame_subsidy - vehicle["price_lakh"]) * 100000 / max(1, (diesel_monthly - ev_monthly_est)))) if diesel_monthly > ev_monthly_est else 999,
+            "ev_tco_lakh": round(ev_tco, 2) if best_ev else None,
+            "savings_lakh": round(savings_lakh, 2) if best_ev else None,
+            "savings_pct": round(savings_pct, 1) if best_ev else None,
+            "breakeven_months": (
+                max(6, int((ev_price - fame_subsidy - vehicle["price_lakh"]) * 100000
+                           / max(1, (diesel_monthly - ev_monthly_est))))
+                if best_ev and diesel_monthly > ev_monthly_est else None
+            ),
             "yearly_breakdown": {
                 "diesel": [round(vehicle["price_lakh"] + (diesel_monthly * 12 * y / 100000), 2) for y in range(1, years + 1)],
-                "ev": [round((ev_price - fame_subsidy) + (ev_monthly_est * 12 * y / 100000), 2) for y in range(1, years + 1)],
+                "ev": [round((ev_price - fame_subsidy) + (ev_monthly_est * 12 * y / 100000), 2) for y in range(1, years + 1)] if best_ev else [],
             }
         },
-        "transition_priority": "immediate" if eri >= 80 else ("next_quarter" if eri >= 65 else ("next_year" if eri >= 50 else "evaluate")),
+        "transition_priority": (
+            "awaiting_technology" if not best_ev
+            else "immediate" if eri >= 80
+            else "next_quarter" if eri >= 65
+            else "next_year" if eri >= 50
+            else "evaluate"
+        ),
     }
 
 
@@ -445,6 +494,10 @@ EMISSION_FACTORS = {
     "diesel_density_kg_per_liter": 0.832,
 }
 
+# Share of EV depot charging met by captive solar / renewable PPA (common for
+# industrial fleets, and called out in the problem brief). Explicit + testable.
+RENEWABLE_DEPOT_SHARE = 0.30
+
 STATE_GRID_FACTORS = {
     "Maharashtra": 0.78, "Delhi": 0.82, "Tamil Nadu": 0.62, "Karnataka": 0.55,
     "Telangana": 0.72, "West Bengal": 0.92, "Gujarat": 0.68,
@@ -481,7 +534,9 @@ def generate_carbon_data(vehicles: List[Dict]) -> Dict:
                 kwh_consumed = monthly_km * v["battery_kwh"] / v["range_km"]
                 state = CITY_TO_STATE.get(v["city"], "Maharashtra")
                 grid_factor = STATE_GRID_FACTORS.get(state, 0.71)
-                scope2 += kwh_consumed * grid_factor
+                # Fraction of depot charging met by captive solar / renewable PPA (zero-carbon)
+                effective_grid = grid_factor * (1 - RENEWABLE_DEPOT_SHARE)
+                scope2 += kwh_consumed * effective_grid
                 scope3 += kwh_consumed * 0.12  # Upstream electricity
 
         monthly_data.append({
@@ -492,15 +547,24 @@ def generate_carbon_data(vehicles: List[Dict]) -> Dict:
             "total_kg": round(scope1 + scope2 + scope3, 1),
         })
 
-    # Counterfactual: what if ALL were diesel
+    # Diesel fuel economy of an equivalent vehicle, by class — a heavy e-truck is not
+    # replaced by a 14 km/l vehicle, so use realistic class-based mileage.
+    DIESEL_EQUIV_MILEAGE = {"3W Cargo": 22, "Light Truck": 14, "Medium Truck": 7, "Heavy Truck": 5}
+
+    # Counterfactual: what if ALL vehicles ran on diesel (same tailpipe + upstream basis
+    # as the actual figures, so real diesels cancel out and only the EV delta remains).
     counterfactual_monthly = []
-    for m, md in enumerate(monthly_data):
-        diesel_total = md["scope1_kg"]
-        for v in [v for v in vehicles if v["type"] == "EV"]:
+    for md in monthly_data:
+        diesel_total = 0.0
+        for v in vehicles:
             monthly_km = v["daily_km"] * 30
-            equiv_mileage = 14  # avg diesel equivalent
-            fuel_liters = monthly_km / equiv_mileage
-            diesel_total += fuel_liters * EMISSION_FACTORS["diesel_kg_co2_per_liter"]
+            if v["type"] == "Diesel":
+                mileage = v["mileage_kmpl"]
+            else:
+                mileage = DIESEL_EQUIV_MILEAGE.get(v["vehicle_type"], 12)
+            fuel_liters = monthly_km / mileage
+            diesel_total += fuel_liters * EMISSION_FACTORS["diesel_kg_co2_per_liter"]  # tailpipe
+            diesel_total += fuel_liters * 0.58  # upstream diesel supply chain
         counterfactual_monthly.append({
             "month": md["month"],
             "total_kg": round(diesel_total, 1),
@@ -518,7 +582,7 @@ def generate_carbon_data(vehicles: List[Dict]) -> Dict:
             else:
                 kwh = monthly_km * v["battery_kwh"] / v["range_km"]
                 state = CITY_TO_STATE.get(v["city"], "Maharashtra")
-                total_emissions += kwh * STATE_GRID_FACTORS.get(state, 0.71)
+                total_emissions += kwh * STATE_GRID_FACTORS.get(state, 0.71) * (1 - RENEWABLE_DEPOT_SHARE)
 
         route_emissions.append({
             "route_id": route["id"],
@@ -551,6 +615,8 @@ def generate_carbon_data(vehicles: List[Dict]) -> Dict:
             "target_electrification_pct": 60.0,
             "net_zero_target_year": 2035,
             "on_track": ev_count / max(total_count, 1) >= 0.3,
+            "renewable_depot_share_pct": round(RENEWABLE_DEPOT_SHARE * 100, 1),
+            "grid_factor_kg_per_kwh": EMISSION_FACTORS["electricity_kg_co2_per_kwh"],
         },
     }
 
@@ -576,6 +642,8 @@ class DataStore:
         self.fleet_readiness = generate_fleet_readiness(self.vehicles)
         self.supply_chain = generate_supply_chain()
         self.carbon_data = generate_carbon_data(self.vehicles)
+        from services.bpan import build_registry
+        self.battery_passports = build_registry(self.ev_vehicles)
         self._initialized = True
         print(f"[OK] Data ready: {len(self.ev_vehicles)} EVs, {len(self.diesel_vehicles)} Diesel, {len(self.supply_chain['suppliers'])} suppliers")
 

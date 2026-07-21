@@ -1,0 +1,386 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.container header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.cardValue {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.modeValue {
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--success);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────── */
+.askPanel,
+.compoundPanel,
+.rosterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.askPanel h2,
+.compoundPanel h2,
+.rosterPanel h2 {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.panelSub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: -8px;
+}
+
+/* ── Ask box ────────────────────────────────────────────────────────── */
+.askRow {
+  display: flex;
+  gap: 12px;
+}
+
+.askInput {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.askInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.askButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.askButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.errorBox {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-left: 3px solid var(--danger);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ── Agent trace ────────────────────────────────────────────────────── */
+.resultBox {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.traceHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.traceSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.traceStep {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--primary);
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.traceStepHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.traceFinding {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.toolTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toolTag {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.answerBox {
+  background-color: rgba(59, 130, 246, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.answerBox h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.answerBox p {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ── Compound findings ──────────────────────────────────────────────── */
+.findingList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.finding {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 4px solid var(--border);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.finding[data-severity='critical'] {
+  border-left-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.finding[data-severity='high'] {
+  border-left-color: var(--warning);
+}
+
+.findingHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.findingTitle {
+  font-size: 15px;
+  flex: 1;
+}
+
+.severityBadge {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.severityBadge[data-severity='critical'] {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.severityBadge[data-severity='high'] {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
+.confidence {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.findingSummary {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.evidenceBlock,
+.actionsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidenceLabel,
+.missLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.evidenceRow {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  align-items: baseline;
+}
+
+.evidenceModule {
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--primary);
+  min-width: 190px;
+  flex-shrink: 0;
+}
+
+.evidenceSignal {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.missBox {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.missBox p {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.actionsBlock ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.actionsBlock li {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+/* ── Roster ─────────────────────────────────────────────────────────── */
+.rosterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.agentCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agentRole {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .askRow {
+    flex-direction: column;
+  }
+
+  .evidenceRow {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .evidenceModule {
+    min-width: 0;
+  }
+}

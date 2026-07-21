@@ -51,7 +51,13 @@ def get_next_best_action():
     actions = []
     route_emissions = {r["route_id"]: r for r in store.carbon_data["route_emissions"]}
 
-    for v in store.fleet_readiness[:10]:  # Top 10 by ERI
+    # Only vehicles with a viable EV replacement are actionable today.
+    electrifiable = [
+        v for v in store.fleet_readiness
+        if v["readiness"]["tco_comparison"]["ev_available"]
+    ]
+
+    for v in electrifiable[:10]:  # Top 10 by ERI
         route = route_emissions.get(v["route_id"], {})
         monthly_diesel = v.get("monthly_cost_inr", 0) / 95 * 2.68  # Approx kg CO2/month
         annual_co2_saved = monthly_diesel * 12 / 1000  # tons
