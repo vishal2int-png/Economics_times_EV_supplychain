@@ -16,6 +16,28 @@ def get_degradation_accuracy():
     return degradation.evaluate_fleet(store.ev_vehicles)
 
 
+@router.get("/validation/real")
+def get_real_validation():
+    """
+    Model accuracy against real measured cells (NASA PCoE ageing dataset) —
+    the non-circular accuracy evidence, including RUL error in cycles.
+    """
+    from services import nasa_data
+    result = degradation.evaluate_nasa()
+    result["cells"] = nasa_data.cell_summary()
+    return result
+
+
+@router.get("/validation/real/{cell}")
+def get_real_cell_curve(cell: str):
+    """Measured SoH-vs-cycle curve for a single NASA cell."""
+    from services import nasa_data
+    curve = nasa_data.cell_curve(cell.upper())
+    if not curve:
+        raise HTTPException(status_code=404, detail=f"Unknown cell '{cell}'")
+    return curve
+
+
 @router.get("/forecast/{vehicle_id}")
 def get_forecast(vehicle_id: str):
     """Observed-vs-fitted degradation curve plus forward projection to EOL."""

@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Activity, Zap, Truck, ShieldAlert, Leaf, Bot } from 'lucide-react';
+import { Activity, Zap, Truck, ShieldAlert, Leaf, Bot, QrCode, Factory } from 'lucide-react';
 import styles from './Layout.module.css';
 
 const navItems = [
   { name: 'Command Center', path: '/', icon: Activity },
   { name: 'Agent Console', path: '/agent-console', icon: Bot },
   { name: 'Battery APM', path: '/battery-apm', icon: Zap },
+  { name: 'Battery Passport', path: '/battery-passport', icon: QrCode },
+  { name: 'Quality (QMS)', path: '/quality', icon: Factory },
   { name: 'Fleet Readiness', path: '/fleet-readiness', icon: Truck },
   { name: 'Supply Chain Risk', path: '/supply-chain', icon: ShieldAlert },
   { name: 'Net Zero Tracker', path: '/net-zero', icon: Leaf },

@@ -44,6 +44,54 @@
   font-size: 18px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.realBadge {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.cellTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.cellTable th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cellTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.mono {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.syntheticNote {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+  margin-top: 4px;
 }
 
 .accuracySub {
@@ -132,6 +180,63 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.alertCard {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.alertCard:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.fleetPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fleetPanel h2 {
+  font-size: 18px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.fleetTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.fleetTable th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.fleetTable td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.clickableRow:hover {
+  background-color: rgba(59, 130, 246, 0.08);
 }
 
 .alertCard[data-severity="critical"] {

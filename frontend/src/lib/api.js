@@ -68,7 +68,18 @@ export const api = {
 
   // Degradation model validation
   getDegradationAccuracy: () => fetchFromAPI('/battery/degradation-accuracy'),
+  getRealValidation: () => fetchFromAPI('/battery/validation/real'),
+  getRealCellCurve: (cell) => fetchFromAPI(`/battery/validation/real/${cell}`),
   getForecast: (id) => fetchFromAPI(`/battery/forecast/${id}`),
+
+  // Manufacturing Quality Intelligence (QMS)
+  getQmsMetrics: () => fetchFromAPI('/qms/metrics'),
+  getQmsControlCharts: () => fetchFromAPI('/qms/control-charts'),
+  getQmsDrift: () => fetchFromAPI('/qms/drift'),
+  getQmsRootCause: () => fetchFromAPI('/qms/root-cause'),
+  getQmsFlaggedBatches: () => fetchFromAPI('/qms/flagged-batches'),
+  getQmsSupplierQuality: () => fetchFromAPI('/qms/supplier-quality'),
+  getQmsTraceability: () => fetchFromAPI('/qms/traceability'),
 
   // Multi-agent intelligence
   getAgents: () => fetchFromAPI('/intelligence/agents'),

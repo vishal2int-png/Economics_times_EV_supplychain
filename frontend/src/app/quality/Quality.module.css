@@ -1,0 +1,314 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.container header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardTitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.cardValue {
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.provenance {
+  background-color: rgba(245, 158, 11, 0.07);
+  border-left: 3px solid var(--warning);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.provenance strong {
+  color: var(--warning);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────── */
+.tabBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tab:hover { color: var(--text); }
+
+.tabActive {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel h2 {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.interpretation {
+  font-size: 13px;
+  line-height: 1.65;
+  border-left: 3px solid var(--primary);
+  padding-left: 14px;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────── */
+.tableWrap { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+
+.baselineRow {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.mono { font-family: var(--font-geist-mono), monospace; }
+
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.clickableRow:hover { background-color: rgba(59, 130, 246, 0.08); }
+
+/* ── Root cause bars ────────────────────────────────────────────────── */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 220px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.barLabel {
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 5px;
+}
+
+.barValue {
+  font-family: var(--font-geist-mono), monospace;
+  text-align: right;
+}
+
+/* ── Drift ──────────────────────────────────────────────────────────── */
+.driftCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--warning);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.driftCard[data-severity='high'] { border-left-color: var(--danger); }
+
+.driftHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.driftCard p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.driftStats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.severityBadge {
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
+.severityBadge[data-severity='high'] {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.inSpecBadge {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: rgba(34, 197, 94, 0.12);
+  color: var(--success);
+}
+
+/* ── Batches ────────────────────────────────────────────────────────── */
+.batchList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.batchCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.batchCard[data-flagged='true'] { border-left-color: var(--danger); }
+
+.batchHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.prob {
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--warning);
+}
+
+.tpBadge, .fpBadge {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.tpBadge {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.fpBadge {
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--text-muted);
+}
+
+.drivers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.driverTag {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+@media (max-width: 900px) {
+  .barRow {
+    grid-template-columns: 140px 1fr 52px;
+  }
+}

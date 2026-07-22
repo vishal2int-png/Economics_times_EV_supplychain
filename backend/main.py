@@ -35,7 +35,7 @@ app.add_middleware(
 )
 
 # Register routers
-from routers import battery, fleet, supply_chain, carbon, ai, bpan, intelligence
+from routers import battery, fleet, supply_chain, carbon, ai, bpan, intelligence, qms
 
 app.include_router(battery.router)
 app.include_router(fleet.router)
@@ -44,6 +44,7 @@ app.include_router(carbon.router)
 app.include_router(ai.router)
 app.include_router(bpan.router)
 app.include_router(intelligence.router)
+app.include_router(qms.router)
 
 
 @app.get("/")
