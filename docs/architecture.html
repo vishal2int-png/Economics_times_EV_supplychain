@@ -1,0 +1,580 @@
+<title>VoltEdge AI — Architecture</title>
+
+<style>
+  :root {
+    --ground: #F3F6FA;
+    --panel: #FFFFFF;
+    --panel-2: #EAEFF6;
+    --rule: #D3DDEA;
+    --ink: #0B1118;
+    --ink-2: #47576D;
+    --ink-3: #7A8AA0;
+    --accent: #1F6FEB;
+    --accent-soft: rgba(31, 111, 235, 0.10);
+    --energy: #B26A00;
+    --energy-soft: rgba(178, 106, 0, 0.10);
+    --ok: #157F5B;
+    --ok-soft: rgba(21, 127, 91, 0.10);
+    --crit: #C0392B;
+
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0B1118;
+      --panel: #131D2A;
+      --panel-2: #18242F;
+      --rule: #27384D;
+      --ink: #E6EDF6;
+      --ink-2: #9DAEC4;
+      --ink-3: #6B7E96;
+      --accent: #4F9CFF;
+      --accent-soft: rgba(79, 156, 255, 0.14);
+      --energy: #FFB13D;
+      --energy-soft: rgba(255, 177, 61, 0.14);
+      --ok: #3FC08D;
+      --ok-soft: rgba(63, 192, 141, 0.14);
+      --crit: #E85D52;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0B1118;
+    --panel: #131D2A;
+    --panel-2: #18242F;
+    --rule: #27384D;
+    --ink: #E6EDF6;
+    --ink-2: #9DAEC4;
+    --ink-3: #6B7E96;
+    --accent: #4F9CFF;
+    --accent-soft: rgba(79, 156, 255, 0.14);
+    --energy: #FFB13D;
+    --energy-soft: rgba(255, 177, 61, 0.14);
+    --ok: #3FC08D;
+    --ok-soft: rgba(63, 192, 141, 0.14);
+    --crit: #E85D52;
+  }
+
+  :root[data-theme="light"] {
+    --ground: #F3F6FA;
+    --panel: #FFFFFF;
+    --panel-2: #EAEFF6;
+    --rule: #D3DDEA;
+    --ink: #0B1118;
+    --ink-2: #47576D;
+    --ink-3: #7A8AA0;
+    --accent: #1F6FEB;
+    --accent-soft: rgba(31, 111, 235, 0.10);
+    --energy: #B26A00;
+    --energy-soft: rgba(178, 106, 0, 0.10);
+    --ok: #157F5B;
+    --ok-soft: rgba(21, 127, 91, 0.10);
+    --crit: #C0392B;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  /* ── Masthead ─────────────────────────────────────────── */
+  .masthead { display: flex; flex-direction: column; gap: 14px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(30px, 4.4vw, 46px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .thesis {
+    max-width: 62ch;
+    color: var(--ink-2);
+    font-size: 17px;
+  }
+
+  .thesis strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Pipeline bands ───────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; gap: 2px; }
+
+  .band {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+  }
+
+  .band + .band { border-top: none; }
+  .pipeline .band:first-child { border-radius: 10px 10px 0 0; }
+  .pipeline .band:last-child { border-radius: 0 0 10px 10px; }
+
+  .rail {
+    background: var(--panel-2);
+    border-right: 1px solid var(--rule);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rail-num {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rail-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  .band-body {
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .band-lead { font-size: 14px; color: var(--ink-2); max-width: 70ch; }
+  .band-lead strong { color: var(--ink); font-weight: 600; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--rule);
+    background: var(--ground);
+    color: var(--ink-2);
+  }
+
+  .chip.key {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* Provenance markers — the honest through-line of the project. */
+  .prov {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .prov.real { background: var(--ok-soft); color: var(--ok); }
+  .prov.synth { background: var(--energy-soft); color: var(--energy); }
+  .prov.model { background: var(--accent-soft); color: var(--accent); }
+
+  /* ── Signal path ──────────────────────────────────────── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px;
+  }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .section-note { font-size: 13px; color: var(--ink-3); }
+
+  .scroller { overflow-x: auto; padding-bottom: 4px; }
+
+  .path {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    min-width: 900px;
+  }
+
+  .hop {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hop + .hop { border-left: none; }
+  .path .hop:first-child { border-radius: 8px 0 0 8px; border-left: 3px solid var(--energy); }
+  .path .hop:last-child { border-radius: 0 8px 8px 0; border-right: 3px solid var(--ok); }
+
+  .hop-src {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .hop-fact { font-size: 13px; color: var(--ink); }
+  .hop-fact b { font-family: var(--mono); font-weight: 600; }
+
+  /* ── Evidence table ───────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 700px;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  td.num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  td.base { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-3); }
+
+  .win { color: var(--ok); }
+
+  /* ── Guarantee callout ────────────────────────────────── */
+  .callout {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .callout h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .callout p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 74ch; }
+  .callout p strong { color: var(--ink); }
+
+  footer {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+  }
+
+  @media (max-width: 720px) {
+    .band { grid-template-columns: 1fr; }
+    .rail {
+      border-right: none;
+      border-bottom: 1px solid var(--rule);
+      flex-direction: row;
+      align-items: baseline;
+      gap: 10px;
+      padding: 12px 18px;
+    }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">ET AI Hackathon 2026 · Problem 3 · Architecture</div>
+    <h1>VoltEdge AI</h1>
+    <p class="thesis">
+      An intelligence layer over four asset domains — battery health, fleet electrification,
+      multi-tier supply chain, and manufacturing quality — joined by one rule:
+      <strong>every figure the system reports traces back to the tool call that produced it.</strong>
+    </p>
+  </header>
+
+  <!-- ── Pipeline ────────────────────────────────────────── -->
+  <section class="pipeline">
+
+    <div class="band">
+      <div class="rail">
+        <div class="rail-num">01</div>
+        <div class="rail-name">Data</div>
+      </div>
+      <div class="band-body">
+        <p class="band-lead">
+          Battery degradation is validated against <strong>real measured cells</strong>, not our own
+          simulation. Everything else is modelled, and labelled as such wherever it appears.
+        </p>
+        <div class="chips">
+          <span class="chip key">NASA PCoE — 4 cells, 636 cycles</span>
+          <span class="prov real">real</span>
+          <span class="chip">CEA grid factor 0.71 kg/kWh</span>
+          <span class="prov real">published</span>
+          <span class="chip">BMS telemetry · 20 EVs</span>
+          <span class="chip">Multi-tier supplier registry · 15 nodes</span>
+          <span class="chip">Line process + inspection · 3,000 batches</span>
+          <span class="prov synth">synthetic</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="rail">
+        <div class="rail-num">02</div>
+        <div class="rail-name">Domain</div>
+      </div>
+      <div class="band-body">
+        <p class="band-lead">
+          Seven services own the physics and the economics. No LLM touches these — they are
+          deterministic and independently testable.
+        </p>
+        <div class="chips">
+          <span class="chip key">degradation.py — SOH(t)=100−a√t−bt</span>
+          <span class="chip key">qms.py — defect classifier + SPC</span>
+          <span class="chip">bpan.py — 21-char pack identity, AIS-156</span>
+          <span class="chip">compound.py — cross-module correlation</span>
+          <span class="chip">nasa_data.py</span>
+          <span class="chip">agents.py</span>
+          <span class="chip">seed_data.py — fleet · supply · carbon</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="rail">
+        <div class="rail-num">03</div>
+        <div class="rail-name">Intelligence</div>
+      </div>
+      <div class="band-body">
+        <p class="band-lead">
+          <strong>Planner → 5 specialist agents → synthesiser</strong>, over a registry of 10
+          deterministic tools. The compound engine correlates signals across four modules that no
+          single module would escalate on its own.
+        </p>
+        <div class="chips">
+          <span class="chip key">Orchestrator · plan → run → synthesise</span>
+          <span class="chip">Battery APM agent</span>
+          <span class="chip">Supply Chain agent</span>
+          <span class="chip">Procurement agent</span>
+          <span class="chip">Carbon agent</span>
+          <span class="chip">Compliance agent</span>
+          <span class="chip key">Compound risk engine · 4 findings</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="rail">
+        <div class="rail-num">04</div>
+        <div class="rail-name">API</div>
+      </div>
+      <div class="band-body">
+        <p class="band-lead">
+          FastAPI — <strong>41 endpoints across 8 routers</strong>, all browsable and executable at
+          <code>/docs</code>.
+        </p>
+        <div class="chips">
+          <span class="chip">/api/battery</span>
+          <span class="chip">/api/bpan</span>
+          <span class="chip">/api/qms</span>
+          <span class="chip">/api/fleet</span>
+          <span class="chip">/api/supply-chain</span>
+          <span class="chip">/api/carbon</span>
+          <span class="chip">/api/intelligence</span>
+          <span class="chip">/api/ai</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="rail">
+        <div class="rail-num">05</div>
+        <div class="rail-name">Experience</div>
+      </div>
+      <div class="band-body">
+        <p class="band-lead">
+          Next.js 16. Every asset is clickable — an alert resolves to a vehicle, a vehicle to its
+          degradation forecast, its passport, and the cell batch it was built from.
+        </p>
+        <div class="chips">
+          <span class="chip">Command Center</span>
+          <span class="chip key">Agent Console</span>
+          <span class="chip">Battery APM</span>
+          <span class="chip">Battery Passport</span>
+          <span class="chip key">Quality (QMS)</span>
+          <span class="chip">Fleet Readiness</span>
+          <span class="chip">Supply Chain Risk</span>
+          <span class="chip">Net Zero</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── Signal path ─────────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <h2>Compound signal path</h2>
+      <span class="section-note">
+        Four modules, one escalation — the case no single dashboard raises.
+      </span>
+    </div>
+    <div class="scroller">
+      <div class="path">
+        <div class="hop">
+          <div class="hop-src">supply_chain.alerts</div>
+          <div class="hop-fact">DRC cobalt export restriction; spot price <b>+18%</b></div>
+        </div>
+        <div class="hop">
+          <div class="hop-src">supply_chain.suppliers</div>
+          <div class="hop-fact">Tenke Fungurume, Tier 4 — composite risk <b>59.1</b></div>
+        </div>
+        <div class="hop">
+          <div class="hop-src">bpan.bmcs</div>
+          <div class="hop-fact">Material composition identifies the exposed <b>NMC</b> packs</div>
+        </div>
+        <div class="hop">
+          <div class="hop-src">battery_apm.rul</div>
+          <div class="hop-fact">Earliest pack at <b>78.4%</b> SoH — <b>11 months</b> runway</div>
+        </div>
+        <div class="hop">
+          <div class="hop-src">procurement</div>
+          <div class="hop-fact"><b>18-week</b> lead time — raise the PO now, or pivot to LFP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Evidence ────────────────────────────────────────── -->
+  <section>
+    <div class="section-head">
+      <h2>Measured evidence</h2>
+      <span class="section-note">Held-out validation against a stated baseline, with provenance.</span>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>Claim</th>
+            <th>Measured</th>
+            <th>Baseline</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Battery degradation forecast (RMSE, %SoH)</td>
+            <td class="num win">2.281</td>
+            <td class="base">3.718 · persistence</td>
+            <td><span class="prov real">real</span> NASA PCoE, 636 cycles</td>
+          </tr>
+          <tr>
+            <td>Remaining useful life error</td>
+            <td class="num">16 cycles</td>
+            <td class="base">10.6% of cell life</td>
+            <td><span class="prov real">real</span> ground-truth EOL crossing</td>
+          </tr>
+          <tr>
+            <td>Manufacturing defect recall</td>
+            <td class="num win">0.854</td>
+            <td class="base">0.521 · 3σ SPC</td>
+            <td><span class="prov synth">synthetic</span> 2,600 batches</td>
+          </tr>
+          <tr>
+            <td>Defect detection ROC-AUC</td>
+            <td class="num">0.903</td>
+            <td class="base">at 17.7% flagged</td>
+            <td><span class="prov synth">synthetic</span> stratified hold-out</td>
+          </tr>
+          <tr>
+            <td>Process drift lead time</td>
+            <td class="num">4.9σ</td>
+            <td class="base">detected while still in spec</td>
+            <td><span class="prov synth">synthetic</span> coating blade wear</td>
+          </tr>
+          <tr>
+            <td>Fleet carbon saved vs all-diesel</td>
+            <td class="num">64.6 t/yr</td>
+            <td class="base">8.8% · assumptions exposed via API</td>
+            <td><span class="prov model">modelled</span> CEA 0.71, 30% depot solar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Guarantee ───────────────────────────────────────── -->
+  <section class="callout">
+    <h3>The architectural guarantee</h3>
+    <p>
+      Tools are the source of truth; the LLM only reasons over what they return. Every number an
+      agent states came from a deterministic read against the live store, so the platform stays
+      auditable — a requirement for anything touching battery safety or regulatory reporting.
+      <strong>The orchestrator degrades to deterministic planning and template synthesis when no
+      model key is present</strong>, so a demo never depends on an external API.
+    </p>
+  </section>
+
+  <footer>
+    Battery Pack Aadhaar is a draft MoRTH scheme — implemented for compliance-readiness, not as a
+    live regulatory integration. NASA PCoE data retrieved via community mirror (CC0).
+  </footer>
+
+</div>
